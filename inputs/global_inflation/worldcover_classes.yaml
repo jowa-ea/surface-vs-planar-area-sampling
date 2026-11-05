@@ -1,0 +1,18 @@
+# ESA WorldCover v200 (2021) class scheme.
+# Source: https://esa-worldcover.org/en (10 m, global, 2 epochs: v100=2020, v200=2021).
+# `enabled: true` classes are stratified/tabulated by default; set to false to
+# exclude a class from a given run without changing the pipeline code.
+classes:
+  10: {name: "Tree cover",              enabled: true}
+  20: {name: "Shrubland",               enabled: true}
+  30: {name: "Grassland",               enabled: true}
+  40: {name: "Cropland",                enabled: true}
+  50: {name: "Built-up",                enabled: true}
+  60: {name: "Bare / sparse vegetation", enabled: true}
+  70: {name: "Snow and ice",            enabled: true}   # glaciers, permanent snowfields, ice sheets sit on real terrain (crevassed, steep) -- included so the global assessment covers cryosphere surfaces, not just vegetated/built land
+  80: {name: "Permanent water bodies",  enabled: false}  # the ONLY excluded class: water is a flat equipotential surface; any DEM "slope" measured over it is void/noise artifact, not real terrain, and would contaminate inflation results
+  90: {name: "Herbaceous wetland",      enabled: true}
+  95: {name: "Mangroves",               enabled: true}
+  100: {name: "Moss and lichen",        enabled: true}   # tundra / high-alpine ground cover on real (often steep) terrain -- included for the same reason as Snow and ice
+
+nodata: 0   # WorldCover NoData value (no class 0 in the scheme above)

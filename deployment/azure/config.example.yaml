@@ -1,0 +1,34 @@
+# Azure ML deployment of the global run. Copy to config.yaml (git-ignored)
+# and fill in your workspace. Everything specific to the cloud setup lives
+# here; the code in terrain_inflation/ knows nothing about it.
+
+workspace:
+  subscription: null                # optional; default: the az CLI's active subscription
+  resource_group: <resource-group>
+  name: <workspace>
+
+compute:                            # used by `orchestrate.py setup`
+  name: cpu-cluster
+  vm_size: Standard_D8ds_v5         # 8 vCPU, 32 GB; the published run used Standard_D16d_v5
+  min_instances: 0                  # scale to zero when idle
+  max_instances: 20                 # one node per concurrently running shard
+  tier: dedicated                   # or low_priority (pre-empted shards must be re-submitted)
+
+environment:                        # used by `orchestrate.py setup`
+  name: terrain-inflation-env
+  image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu22.04:latest
+  conda_file: ../../environment.yml # relative to this file
+
+manifest:                           # cell list, registered as a data asset by `setup`
+  asset_name: global-land-cells-manifest
+  path: ../../results/global_inflation/global_land_cells_manifest.csv  # relative to this file
+
+run:                                # used by `orchestrate.py submit`
+  experiment: terrain-inflation
+  n_shards: 20                      # the cells are split into this many jobs
+  workers_per_job: 4                # cells processed concurrently within a job
+  max_retries: 2                    # retry passes for failed cells within a job
+  scratch_dir: /tmp/terrain_cells   # node-local disk for per-cell rasters
+  wave_size: 4                      # jobs started together; more trigger Planetary Computer HTTP 429
+  submit_delay_s: 15                # pause between submissions within a wave
+  poll_interval_s: 60               # job status polling while a wave runs

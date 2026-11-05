@@ -1,0 +1,10 @@
+quantity (target class 1),value,standard_error
+map_planar_A_c_ha,751710.1013869001,
+map_surface_S_c_ha,829856.216098,
+map_planar_laea_A_c_EA_ha,751705.38,
+estimate_A_srs_planar_ha,686998.3483457224,13461.312777270505
+estimate_B_pps_surface_ha,740073.6583167156,16018.276558164162
+difference_B_minus_A_ha,53075.3099709932,20923.482635100154
+difference_B_minus_A_pct_of_A,7.72568232497173,3.0456379823158906
+z,2.536638421844593,
+p_two_sided,0.011192248598097825,

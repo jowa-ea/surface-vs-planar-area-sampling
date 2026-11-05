@@ -1,0 +1,10 @@
+# Excluded from the Azure ML code snapshot: the shard jobs need only the core
+# package terrain_inflation/ and inputs/global_inflation/ (the cell manifest
+# is passed as a separate data asset).
+results/
+inputs/sampling_comparison/
+work/
+deployment/
+.git/
+__pycache__/
+*.pyc

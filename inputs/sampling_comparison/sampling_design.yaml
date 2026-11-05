@@ -1,0 +1,44 @@
+# Sampling comparison (paper, Section "Sample-based area and accuracy
+# estimation"): study blocks and every design choice. Read by
+# terrain_inflation/sampling/prepare_block.py and estimate_block.py.
+#
+# Each block is one 100 km cell of the global CEA grid (terrain_inflation/cea_grid.py),
+# processed exactly as in the global assessment: WorldCover v200 grid-matched
+# onto the Copernicus DEM GLO-30 grid; pixels whose centre lies in the cell
+# and whose 3x3 elevation neighbourhood has no void. Permanent water
+# (WorldCover 80) is outside the population.
+#
+# Two strata per block: 1 = target class, 2 = all other WorldCover classes.
+# Reference labels use the same codes (1 = target, 2 = other).
+
+blocks:
+  klamath_forest:
+    cell_id: row48_col-119        # Klamath Mountains, California; centroid -122.82, 41.47
+    target_class: 1
+    strata:
+      1: {name: "Forest", worldcover: [10]}
+      2: {name: "Non-forest", worldcover: [20, 30, 40, 50, 60, 70, 90, 95, 100]}
+    seed_pps: 4801190             # Experiment B draw
+    seed_srs: 4801191             # Experiment A draw
+    seed_ids: 20261015            # shuffle of both samples into the blind labelling ids
+  ukraine_cropland:
+    cell_id: row54_col30          # Kirovohrad oblast, Ukraine; centroid 31.61, 48.05
+    target_class: 1
+    strata:
+      1: {name: "Cropland", worldcover: [40]}
+      2: {name: "Non-cropland", worldcover: [10, 20, 30, 50, 60, 70, 90, 95, 100]}
+    seed_pps: 5400300
+    seed_srs: 5400301
+    seed_ids: 20261014
+
+sample_size:
+  n_total: 400                    # per block and per experiment
+  allocation: proportional        # n_c = n_total * W_c, rounded by largest remainder
+  # Experiment A: W_c = A_c^EA / sum A^EA  (planar area on the LAEA grid)
+  # Experiment B: W_c = S_c / sum S       (surface area on the DEM grid)
+
+experiment_a_srs:
+  pixel_size_m: 30                # LAEA pixel size of the Experiment A grid
+
+experiment_b_pps:
+  block_rows: 2000                # row-block size of the two-pass cumulative-total draw

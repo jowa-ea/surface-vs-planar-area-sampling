@@ -1,0 +1,13 @@
+# Python 3.13. Versions are those used for the published results.
+# GDAL must also provide the `gdalwarp` command-line tool; installing it with
+# conda (see environment.yml) is strongly recommended over pip.
+GDAL==3.12.3
+numpy==2.4.6
+pandas==2.2.3
+geopandas==1.1.4
+shapely==2.1.2
+pyproj==3.7.2
+PyYAML==6.0.3
+requests==2.32.3
+pystac-client==0.9.0
+planetary-computer==1.0.0

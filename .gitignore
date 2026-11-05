@@ -1,0 +1,8 @@
+# Downloads, rasters and intermediate outputs (see terrain_inflation/paths.py)
+work/
+# Local Azure ML deployment settings (template: deployment/azure/config.example.yaml)
+deployment/azure/config.yaml
+__pycache__/
+*.pyc
+*.egg-info/
+.ipynb_checkpoints/
