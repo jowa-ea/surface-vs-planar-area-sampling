@@ -92,13 +92,36 @@ def per_pixel_areas(map_path, dem_path, bbox):
     return classes[win], a_p[win], s_p[win], ~void[win], (r0, r1, c0, c1)
 
 
-def compute_area_by_class(map_path, dem_path, cell, class_codes):
+def terrain_window(dem_path, window):
+    """Elevation (m) and Horn slope (deg) over a DEM-grid window."""
+    dem_ds = gdal.Open(dem_path)
+    xsize, ysize = dem_ds.RasterXSize, dem_ds.RasterYSize
+    gt = dem_ds.GetGeoTransform()
+    z = dem_ds.GetRasterBand(1).ReadAsArray().astype(np.float64)
+    dem_ds = None
+    lat_centers = gt[3] + (np.arange(ysize) + 0.5) * gt[5]
+    dx, dy = geodesy.ground_spacing_m(lat_centers, abs(gt[1]), abs(gt[5]))
+    slope = geodesy.horn_slope_deg(np.pad(z, 1, mode="edge"), dx, dy, ysize, xsize)
+    r0, r1, c0, c1 = window
+    return z[r0:r1, c0:c1], slope[r0:r1, c0:c1]
+
+
+def compute_area_by_class(map_path, dem_path, cell, class_codes, terrain=False):
     """Planar and surface area (m^2) per class over the CEA cell.
-    Returns (planar_sums, surface_sums), each {class_code: m^2}."""
-    classes, a_p, s_p, valid, _ = per_pixel_areas(map_path, dem_path, cell.wgs84_bbox)
-    planar, surface = {}, {}
+    Returns (planar_sums, surface_sums), each {class_code: m^2}.
+
+    terrain=True also returns {class_code: (mean_elevation_m, mean_slope_deg)},
+    the planar-area-weighted means over the same pixels (NaN if none)."""
+    classes, a_p, s_p, valid, window = per_pixel_areas(map_path, dem_path, cell.wgs84_bbox)
+    if terrain:
+        z, slope = terrain_window(dem_path, window)
+    planar, surface, means = {}, {}, {}
     for c in class_codes:
         mask = valid & (classes == c)
-        planar[c] = float(np.sum(a_p[mask]))
+        w = a_p[mask]
+        planar[c] = float(np.sum(w))
         surface[c] = float(np.sum(s_p[mask]))
-    return planar, surface
+        if terrain:
+            means[c] = ((float(np.sum(w * z[mask])) / planar[c], float(np.sum(w * slope[mask])) / planar[c])
+                        if planar[c] > 0 else (float("nan"), float("nan")))
+    return (planar, surface, means) if terrain else (planar, surface)

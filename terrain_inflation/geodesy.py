@@ -47,6 +47,20 @@ def pixel_area_m2(dx, dy, rows, cols):
     return np.broadcast_to(dx * dy, (rows, cols))
 
 
+def horn_slope_deg(z_pad, dx, dy, rows, cols):
+    """Slope (degrees) per pixel by Horn (1981): 3x3 finite differences on the
+    true per-row ground spacing. Used only as a terrain descriptor; surface
+    area comes from jenness_surface_area.
+
+    z_pad : elevation, shape (rows+2, cols+2) -- 1-pixel halo on every side.
+    dx, dy : per-row ground spacing, shape (rows, 1).
+    """
+    z = lambda r, c: z_pad[r:r + rows, c:c + cols]  # noqa: E731
+    dzdx = ((z(0, 2) + 2 * z(1, 2) + z(2, 2)) - (z(0, 0) + 2 * z(1, 0) + z(2, 0))) / (8.0 * dx)
+    dzdy = ((z(2, 0) + 2 * z(2, 1) + z(2, 2)) - (z(0, 0) + 2 * z(0, 1) + z(0, 2))) / (8.0 * dy)
+    return np.degrees(np.arctan(np.hypot(dzdx, dzdy)))
+
+
 def jenness_surface_area(z_pad, dx, dy, rows, cols):
     """Jenness (2004) triangulated surface area s_p (m^2) per pixel.
 

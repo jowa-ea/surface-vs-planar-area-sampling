@@ -134,7 +134,7 @@ sum(surface) / sum(planar) - 1, in % of planar area.
 |---|---|
 | `global_land_cells_manifest.csv` | the 17,505 land cells: id, CEA row / column, centroid, lon / lat bounds (plain and buffered) |
 | `global_status.csv` | outcome per cell: 16,088 `done`; 1,391 outside WorldCover; 7 in a Copernicus DEM tile gap; 19 small islands without a WorldCover tile |
-| `global_area_stats.csv` | one row per cell x class: `planar_area_ha`, `surface_area_ha`, `inflation_ratio` (surface / planar), before the 100 ha floor |
+| `global_area_stats.csv` | one row per cell x class: `planar_area_ha`, `surface_area_ha`, `inflation_ratio` (surface / planar), `mean_elevation_m` and `mean_slope_deg` (planar-area-weighted means over the same pixels; Horn slope), before the 100 ha floor |
 | `global_class_summary.csv` | per class and all classes: planar and surface area (Mha), absolute (Mha) and relative (%) surface-area underestimation, number of cells (paper table) |
 | `global_cell_summary.csv` | per cell, all classes combined: planar and surface area (ha), relative surface-area underestimation (%) (paper map) |
 

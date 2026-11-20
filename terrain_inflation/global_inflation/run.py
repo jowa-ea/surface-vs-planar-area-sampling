@@ -59,7 +59,8 @@ def output_files(shard):
     return {
         "area": (f"shard_{shard}_area_stats.csv",
                  ["cell_id", "centroid_lon", "centroid_lat", "worldcover_class", "class_name",
-                  "planar_area_ha", "surface_area_ha", "inflation_ratio"]),
+                  "planar_area_ha", "surface_area_ha", "inflation_ratio",
+                  "mean_elevation_m", "mean_slope_deg"]),
         "status": (f"shard_{shard}_status.csv", ["cell_id", "status", "error"]),
         "provenance": (f"shard_{shard}_provenance.csv",
                        ["cell_id", "worldcover_items", "dem_items"]),
@@ -106,7 +107,8 @@ def run_one_cell(row, classes, scratch_dir):
         t_grid = time.time() - t1
 
         t2 = time.time()
-        planar, surface = area_tally.compute_area_by_class(wc_matched, dem_raw, cell, classes)
+        planar, surface, terrain = area_tally.compute_area_by_class(wc_matched, dem_raw, cell, classes,
+                                                                    terrain=True)
         t_compute = time.time() - t2
 
         volume = sum(os.path.getsize(p) for p in (wc_raw, dem_raw, wc_matched) if os.path.exists(p))
@@ -119,6 +121,7 @@ def run_one_cell(row, classes, scratch_dir):
                 "worldcover_class": code, "class_name": name,
                 "planar_area_ha": p_ha, "surface_area_ha": s_ha,
                 "inflation_ratio": s_ha / p_ha if p_ha > 0 else float("nan"),
+                "mean_elevation_m": terrain[code][0], "mean_slope_deg": terrain[code][1],
             })
         outputs = {
             "area": area_rows,
