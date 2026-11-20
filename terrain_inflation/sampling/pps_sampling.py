@@ -99,22 +99,28 @@ def estimate_area_and_accuracy(S_c, sample):
     p = {(c, j): (sum(1 for r in sample if r["stratum"] == c and r["reference_label"] == j) / n[c]
                   if n[c] else 0.0) for c in strata for j in ref}
 
+    # Hansen-Hurwitz with-replacement variance, 1/(n(n-1)) sum (y/pi - Y_hat)^2
+    # (Cochran 1977, 9A; Tyukavina et al. 2025, Eq. A.24). With y/pi = S_c * 1[r = j]
+    # this is S_c^2 * x(1-x)/(n_c-1); v() returns the x(1-x)/(n_c-1) factor.
+    def v(c, x):
+        return x * (1 - x) / (n[c] - 1) if n[c] > 1 else float("nan")
+
     area = {}
     for j in ref:
         est = sum(S_c[c] * p[(c, j)] for c in strata)
-        var = sum(S_c[c] ** 2 * p[(c, j)] * (1 - p[(c, j)]) / n[c] for c in strata if n[c])
+        var = sum(S_c[c] ** 2 * v(c, p[(c, j)]) for c in strata if n[c])
         area[j] = {"estimate_m2": est, "variance_m2": var, "ci95_m2": _ci95(est, var)}
 
     oa = sum(S_c[c] * p[(c, c)] for c in strata) / S
-    var_oa = sum((S_c[c] / S) ** 2 * p[(c, c)] * (1 - p[(c, c)]) / n[c] for c in strata if n[c])
+    var_oa = sum((S_c[c] / S) ** 2 * v(c, p[(c, c)]) for c in strata if n[c])
 
     ua = {}
     for c in strata:
         if not n[c]:
             ua[c] = {"estimate": float("nan"), "variance": float("nan"), "ci95": (float("nan"),) * 2, "n": 0}
             continue
-        v = p[(c, c)] * (1 - p[(c, c)]) / n[c]
-        ua[c] = {"estimate": p[(c, c)], "variance": v, "ci95": _ci95(p[(c, c)], v), "n": n[c]}
+        var_ua = v(c, p[(c, c)])
+        ua[c] = {"estimate": p[(c, c)], "variance": var_ua, "ci95": _ci95(p[(c, c)], var_ua), "n": n[c]}
 
     # Producer's accuracy: ratio of two estimates, Taylor-linearised variance.
     # The numerator is the c = j summand of the denominator, so Cov = Var(numerator).
@@ -125,10 +131,10 @@ def estimate_area_and_accuracy(S_c, sample):
             pa[j] = {"estimate": float("nan"), "variance": float("nan"), "ci95": (float("nan"),) * 2}
             continue
         A = S_c[j] * p[(j, j)]
-        var_A = S_c[j] ** 2 * p[(j, j)] * (1 - p[(j, j)]) / n[j]
+        var_A = S_c[j] ** 2 * v(j, p[(j, j)])
         r = A / B
-        v = max((var_A * (1 - 2 * r) + r ** 2 * var_B) / B ** 2, 0.0)
-        pa[j] = {"estimate": r, "variance": v, "ci95": _ci95(r, v)}
+        var_pa = max((var_A * (1 - 2 * r) + r ** 2 * var_B) / B ** 2, 0.0)
+        pa[j] = {"estimate": r, "variance": var_pa, "ci95": _ci95(r, var_pa)}
 
     return {
         "area": area,
