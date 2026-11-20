@@ -21,7 +21,7 @@ RESULTS = os.path.join(REPO_ROOT, "results")
 WORK_DIR = os.environ.get("TERRAIN_WORK_DIR") or os.path.join(REPO_ROOT, "work")
 CACHE_DIR = os.path.join(WORK_DIR, "cache")
 
-# Global inflation
+# Global surface-area underestimation
 GLOBAL_INPUTS = os.path.join(INPUTS, "global_inflation")
 GLOBAL_RESULTS = os.path.join(RESULTS, "global_inflation")
 GLOBAL_WORK = os.path.join(WORK_DIR, "global_inflation")

@@ -1,4 +1,4 @@
-# Running the global inflation step on Azure Machine Learning
+# Running the global surface-area step on Azure Machine Learning
 
 The global run processes 17,505 land cells. Each cell takes about 13 s
 (median 12.7 s, 40 MB read from the Planetary Computer), about 58

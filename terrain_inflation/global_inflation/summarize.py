@@ -1,12 +1,13 @@
 """
-Step 4 -- per-class and per-cell inflation from the global area table
-(paper, Sections "Aggregation and inflation metrics" and "Global surface
-versus planar area").
+Step 4 -- per-class and per-cell surface-area underestimation from the
+global area table (paper, Sections "Aggregation and underestimation
+metrics" and "Global surface versus planar area").
 
 Cell x class records with a planar area below 100 ha are dropped first, as
 are records without a positive surface area (a processing failure: a
 non-empty pixel set always has a positive triangulated surface area).
-Inflation is area-weighted: sum(surface) / sum(planar) - 1.
+The relative underestimation is area-weighted: sum(surface) / sum(planar) - 1
+(columns *_inflation_* keep the development-time name).
 
 Reads --area-stats (default results/global_inflation/global_area_stats.csv) and
 writes, next

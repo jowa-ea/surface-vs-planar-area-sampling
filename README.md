@@ -9,9 +9,10 @@ Code and data for:
 Planar area in an equal-area projection ignores terrain relief. The
 repository covers the two parts of the paper:
 
-1. **Global inflation**: for every 100 km land cell worldwide and each ESA
-   WorldCover class, the planar area and the true (triangulated) surface
-   area, and the resulting surface-area inflation.
+1. **Global surface-area underestimation**: for every 100 km land cell
+   worldwide and each ESA WorldCover class, the planar area, the true
+   (triangulated) surface area, and how much planar area underestimates
+   surface area.
 2. **Sampling comparison**: stratified random sampling on an equal-area grid
    (planar area) against stratified sampling with probability proportional
    to pixel surface area (PPS), in two 10,000 km² cells: sampling procedure,
@@ -34,7 +35,7 @@ terrain_inflation/              core package: all computation, no cluster or mac
     cells.py                    step 1: land cells -> manifest
     run.py                      step 2: planar + surface area per cell and class (all cells or one shard)
     aggregate.py                step 3: merge shard outputs
-    summarize.py                step 4: per-class and per-cell inflation
+    summarize.py                step 4: per-class and per-cell underestimation
   sampling/
     prepare_block.py            step 1: strata, stratum totals, allocation, both samples
     estimate_block.py           step 2: area and accuracy estimates, design comparison
@@ -87,7 +88,7 @@ python -m terrain_inflation.sampling.estimate_block ukraine_cropland
 git diff --stat results/
 ```
 
-## Part 1 -- Global inflation
+## Part 1 -- Global surface-area underestimation
 
 ### Run
 
@@ -124,7 +125,8 @@ and its surface area from the Jenness (2004) 8-triangle method with the same
 spacing. Both are summed per class over the pixels whose centre lies in the
 CEA cell and whose 3x3 elevation neighbourhood has no void. `summarize`
 drops cell x class records below 100 ha planar area, then computes
-area-weighted inflation, sum(surface) / sum(planar) - 1.
+the area-weighted relative underestimation of surface area by planar area,
+sum(surface) / sum(planar) - 1, in % of planar area.
 
 ### Output (`results/global_inflation/`)
 
@@ -133,8 +135,8 @@ area-weighted inflation, sum(surface) / sum(planar) - 1.
 | `global_land_cells_manifest.csv` | the 17,505 land cells: id, CEA row / column, centroid, lon / lat bounds (plain and buffered) |
 | `global_status.csv` | outcome per cell: 16,088 `done`; 1,391 outside WorldCover; 7 in a Copernicus DEM tile gap; 19 small islands without a WorldCover tile |
 | `global_area_stats.csv` | one row per cell x class: `planar_area_ha`, `surface_area_ha`, `inflation_ratio` (surface / planar), before the 100 ha floor |
-| `global_class_summary.csv` | per class and all classes: planar and surface area (Mha), absolute (Mha) and relative (%) inflation, number of cells (paper table) |
-| `global_cell_summary.csv` | per cell, all classes combined: planar and surface area (ha), relative inflation (%) (paper map) |
+| `global_class_summary.csv` | per class and all classes: planar and surface area (Mha), absolute (Mha) and relative (%) surface-area underestimation, number of cells (paper table) |
+| `global_cell_summary.csv` | per cell, all classes combined: planar and surface area (ha), relative surface-area underestimation (%) (paper map) |
 
 Published run: 16,059 cells after the 100 ha floor, 13,119.7 Mha planar,
 13,427.8 Mha surface, +308.2 Mha (+2.35%).
@@ -161,7 +163,7 @@ samples exactly. `estimate_block` needs no download.
 | `inputs/sampling_comparison/reference_labels/<block>.csv` | reference label of each of the 800 sample units of a block (both experiments) |
 | WorldCover, Copernicus DEM | as in Part 1 |
 
-| Block | Cell | Location | Target class | Share of block | Inflation of target class |
+| Block | Cell | Location | Target class | Share of block | Surface-area underestimation of target class |
 |---|---|---|---|---|---|
 | `klamath_forest` | `row48_col-119` | Klamath Mountains, California, USA | Tree cover | 75.5% | 10.4% |
 | `ukraine_cropland` | `row54_col30` | Kirovohrad oblast, Ukraine | Cropland | 79.5% | 0.09% |
@@ -183,7 +185,7 @@ on Planet monthly global 3 m imagery of 2021.
 
 | File | Content |
 |---|---|
-| `stratum_totals.csv` | per stratum: DEM-grid pixels, planar area A_c and surface area S_c (m²), inflation (%), LAEA pixels N_c, planar area A_c^EA (m²), weights W_c and sample sizes n_c of both experiments |
+| `stratum_totals.csv` | per stratum: DEM-grid pixels, planar area A_c and surface area S_c (m²), relative surface-area underestimation (%), LAEA pixels N_c, planar area A_c^EA (m²), weights W_c and sample sizes n_c of both experiments |
 | `srs_sample.csv` | Experiment A units: `id`, map `stratum`, LAEA `row` / `col`, `x_laea` / `y_laea`, `lon` / `lat` |
 | `pps_sample.csv` | Experiment B units: `id`, map `stratum`, DEM-grid `row` / `col` within the block, `lon` / `lat`, pixel `surface_area_m2`. Drawn with replacement: a pixel can appear more than once, under different ids |
 | `laea_grid.txt` | PROJ definition and geotransform of the Experiment A grid |

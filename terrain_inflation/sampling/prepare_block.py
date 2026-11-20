@@ -22,7 +22,8 @@ Step 1 -- population, strata, allocation and both samples of one study block
 
 Inputs:  inputs/sampling_comparison/sampling_design.yaml
 Results: results/sampling_comparison/<block>/
-  stratum_totals.csv  per stratum: DEM-grid pixels, A_c, S_c, inflation, LAEA
+  stratum_totals.csv  per stratum: DEM-grid pixels, A_c, S_c, relative surface-area
+                      underestimation (column inflation_pct), LAEA
                       pixels N_c, A_c^EA, and W_c and n_c of both experiments
   srs_sample.csv      Experiment A sample units
   pps_sample.csv      Experiment B sample units

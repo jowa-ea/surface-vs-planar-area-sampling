@@ -1,5 +1,5 @@
 """
-Run the global inflation step on an Azure ML compute cluster.
+Run the global surface-area step on an Azure ML compute cluster.
 
 This is orchestration only: every job runs the hardware-independent core
 command
