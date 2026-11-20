@@ -13,8 +13,10 @@ Reads --area-stats (default results/global_inflation/global_area_stats.csv) and
 writes, next
 to it:
   global_class_summary.csv  one row per class plus "All classes" (paper table)
-  global_cell_summary.csv   all classes combined, one row per cell (paper map
-                            and per-cell statistics)
+  global_cell_summary.csv   all classes combined, one row per cell (paper map,
+                            per-cell statistics and underestimation-vs-slope
+                            figure; with mean_elevation_m / mean_slope_deg
+                            weighted by planar area when the input has them)
 and prints the numbers quoted in the text.
 
 Usage: python -m terrain_inflation.global_inflation.summarize [--area-stats FILE]
@@ -66,6 +68,11 @@ def cell_summary(df):
                   planar_area_ha=("planar_area_ha", "sum"), surface_area_ha=("surface_area_ha", "sum"))
              .reset_index())
     cells["relative_inflation_pct"] = (cells["surface_area_ha"] / cells["planar_area_ha"] - 1) * 100
+    # planar-area-weighted mean elevation and slope over the retained classes
+    for col in ("mean_elevation_m", "mean_slope_deg"):
+        if col in df.columns:
+            w = (df[col] * df["planar_area_ha"]).groupby(df["cell_id"]).sum()
+            cells[col] = cells["cell_id"].map(w) / cells["planar_area_ha"]
     return cells
 
 
@@ -85,6 +92,10 @@ def main(area_stats_csv):
           f"per cell: median {pct.median():.2f}%, p90 {pct.quantile(0.9):.1f}%, "
           f"p99 {pct.quantile(0.99):.1f}%, max {pct.max():.1f}%, "
           f"> 10%: {int((pct > 10).sum())} cells ({(pct > 10).mean() * 100:.1f}%)")
+    for col in ("mean_slope_deg", "mean_elevation_m"):
+        if col in cells.columns:
+            print(f"Spearman rho per cell, underestimation vs {col}: "
+                  f"{pct.corr(cells[col], method='spearman'):.2f}")
 
 
 if __name__ == "__main__":
